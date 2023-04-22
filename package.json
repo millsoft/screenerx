@@ -4,7 +4,7 @@
     "name": "Michael Milawski",
     "email": "mm@millsoft.de"
   },
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Batch create screenshots from websites",
   "main": "screenerx.js",
   "license": "MIT",
