@@ -1,0 +1,14 @@
+{
+	"linkFile" : "links.txt",
+    "tasks": [
+        {
+            "name" : "test_landscape",
+            "enabled" : true,
+            "baseUrl" : "https://www.example.com",
+            "browser" : "chrome",
+            "width" : 1920,
+            "height" : 1080,
+            "fullPage" : false
+        }
+    ]
+}

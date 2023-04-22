@@ -1,0 +1,37 @@
+{
+  "name": "screenerx",
+  "author": {
+    "name": "Michael Milawski",
+    "email": "mm@millsoft.de"
+  },
+  "version": "1.0.0",
+  "description": "Batch create screenshots from websites",
+  "main": "screenerx.js",
+  "license": "MIT",
+  "bin": {
+    "screenerx": "screenerx.js"
+  },
+  "keywords": [
+    "screenshot",
+    "webpage",
+    "batch",
+    "automation",
+    "puppeteer",
+    "yargs"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/millsoft/screenerx.git"
+  },
+  "bugs": {
+    "url": "https://github.com/millsoft/screenerx/issues"
+  },
+  "dependencies": {
+    "puppeteer": "^19.9.1",
+    "yargs": "^17.7.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified yet\" && exit 1"
+  }
+}
