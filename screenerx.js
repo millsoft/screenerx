@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+const readline = require('readline');
 
 const yargs = require('yargs');
 const puppeteer = require('puppeteer');
@@ -21,10 +22,42 @@ async function getArguments() {
                 describe: 'Path to link file',
                 type: 'string'
             }
+        })
+        //add a new option for "width":
+        .options({
+            'width': {
+                alias: 'w',
+                describe: 'Width of the viewport',
+                type: 'number'
+            }
+        })
+        //add a new option for "height":
+        .options({
+            'height': {
+                alias: 'h',
+                describe: 'Height of the viewport',
+                type: 'number'
+            }
+        })
+        //add a new option for "fullPage":
+        .options({
+            'fullPage': {
+                describe: 'Full page screenshot',
+                type: 'boolean'
+            }
+        })
+        //add a new option for "url":
+        .options({
+            'url': {
+                describe: 'URL to screenshot',
+                type: 'string'
+            }
         }).argv;
 
+
     return {
-        linkFile: argv.file
+        linkFile: argv.file,
+        url: argv.url
     }
 }
 
@@ -78,12 +111,20 @@ async function takeScreenshots(task, conf, arguments) {
     });
 
     const fullPage = task?.fullPage ?? false;
+
+    let links = [];
     const currentLinkFile = arguments.linkFile ?? task.linkFile ?? conf.linkFile ?? "links.txt";
-    console.log("Reading links from file: " + currentLinkFile);
+
+    if (arguments.url) {
+        links = [arguments.url];
+    } else if (arguments.linkFile) {
+        console.log("Reading links from file: " + currentLinkFile);
+        links = (await fs.readFile(currentLinkFile, 'utf-8')).split('\n');
+    }
+
+    console.log("LINKS: " + links);
 
     try {
-        const links = (await fs.readFile(currentLinkFile, 'utf-8')).split('\n');
-
         for (const link of links) {
             if (!link) continue;
 
@@ -115,7 +156,6 @@ async function takeScreenshots(task, conf, arguments) {
 (async () => {
     const conf = await readConfigFile();
     const arguments = await getArguments();
-
     for (const task of conf.tasks) {
         if (!task.enabled ?? true) continue;
         await takeScreenshots(task, conf, arguments);
