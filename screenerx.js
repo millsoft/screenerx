@@ -15,7 +15,10 @@ async function getArguments() {
         .help('h')
         .alias('h', 'help')
         .example('$0 -f links.txt', 'Use --file option to specify path to file')
-        .example('$0 links.txt', 'Use positional argument to specify path to file')
+        .example('$0 --width=800 --height=400', 'set the width and height of the viewport')
+        .example('$0 --url=https://example.com', 'take a screenshot of a single URL (ignores link file)')
+        .example('$0 --outputPath=screenshots', 'save screenshots to a custom folder')
+        .example('$0 --outputFile=screenshots.jpg', 'save screenshots to a single file')
         .options({
             'file': {
                 alias: 'f',
@@ -26,24 +29,26 @@ async function getArguments() {
         //add a new option for "width":
         .options({
             'width': {
-                alias: 'w',
                 describe: 'Width of the viewport',
-                type: 'number'
+                type: 'string'
             }
         })
         //add a new option for "height":
         .options({
             'height': {
-                alias: 'h',
                 describe: 'Height of the viewport',
-                type: 'number'
+                type: 'string'
             }
         })
-        //add a new option for "fullPage":
+        //add output path option:
         .options({
-            'fullPage': {
-                describe: 'Full page screenshot',
-                type: 'boolean'
+            'outputPath': {
+                describe: 'Path to save screenshots',
+            }
+        })
+        .options({
+            'outputFile': {
+                describe: 'Save screenshots to a single file',
             }
         })
         //add a new option for "url":
@@ -54,10 +59,13 @@ async function getArguments() {
             }
         }).argv;
 
-
     return {
         linkFile: argv.file,
-        url: argv.url
+        url: argv.url,
+        width: argv.width || undefined,
+        height: argv.height || undefined,
+        outputPath: argv.outputPath || undefined,
+        outputFile: argv.outputFile || undefined
     }
 }
 
@@ -76,8 +84,7 @@ async function readConfigFile() {
                     "enabled": true,
                     "browser": "chrome",
                     "width": 1920,
-                    "height": 1080,
-                    "fullPage": false
+                    "height": 1080
                 }
             ]
         }
@@ -95,34 +102,40 @@ async function createFolder(path) {
 }
 
 async function takeScreenshots(task, conf, arguments) {
-    const currentScreenshotPath = `${screenshotPath}/${task.name}_${task.browser}`;
+    const currentScreenshotPath = arguments.outputPath ?? `${screenshotPath}/${task.name}_${task.browser}`;
     await createFolder(currentScreenshotPath);
 
     const browser = await puppeteer.launch({
+        headless: "new",
         product: task.browser,
         ignoreHTTPSErrors: true
     });
+
     const page = await browser.newPage();
 
-    await page.setViewport({
-        width: task.width,
-        height: task.height,
-        deviceScaleFactor: 1
-    });
+    let height = arguments.height ?? task.height ?? 'full';
+    let fullPage = false;
+    if(height === 'full'){
+        fullPage = true;
+        height = 800;
+    }
 
-    const fullPage = task?.fullPage ?? false;
+    const viewPortCongig = {
+        width: parseInt(arguments.width ?? task.width ?? 1920),
+        height: parseInt(height),
+        deviceScaleFactor: 1
+    };
+    await page.setViewport(viewPortCongig);
 
     let links = [];
     const currentLinkFile = arguments.linkFile ?? task.linkFile ?? conf.linkFile ?? "links.txt";
 
+
     if (arguments.url) {
         links = [arguments.url];
-    } else if (arguments.linkFile) {
-        console.log("Reading links from file: " + currentLinkFile);
+    } else {
         links = (await fs.readFile(currentLinkFile, 'utf-8')).split('\n');
     }
-
-    console.log("LINKS: " + links);
 
     try {
         for (const link of links) {
@@ -132,13 +145,14 @@ async function takeScreenshots(task, conf, arguments) {
             const finalUrl = link.startsWith('http') ? link : `${baseUrl}${link}`;
 
             console.log(`Taking screenshot of ${finalUrl}...`);
-
             await page.goto(finalUrl, {waitUntil: 'networkidle0'});
 
-            await page.screenshot({
-                path: `${currentScreenshotPath}/${link.replace(/[^a-z0-9]/gi, '-')}.png`,
+            const outputFile = arguments.outputFile ?? `${link.replace(/[^a-z0-9]/gi, '-')}.jpg`;
+            const screenshotParams = {
+                path: `${currentScreenshotPath}/${outputFile}`,
                 fullPage: fullPage
-            });
+            };
+            await page.screenshot(screenshotParams);
         }
 
         await browser.close();

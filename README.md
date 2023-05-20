@@ -1,4 +1,4 @@
-# screenerx
+# Screenerx
 
 This nodejs project will create batch screenshots of websites.
 It uses the awesome puppeteer library which uses a real browser under the hood, e.g. a Chrome or Firefox.
@@ -13,6 +13,42 @@ yarn global add screenerx
 
 ## Usage
 
+### Use arguments
+
+You can call screenerx with arguments:
+
+
+#### Examples
+```bash
+# create a screenshot with default settings
+screenerx --url https://example.com
+
+# set width and height
+screenerx --url https://example.com --width=1200 --height=800
+
+# create a full page screenshot
+screenerx --url https://example.com --width=1200 --height=full
+
+# set output path
+screenerx --url https://example.com --width=1200 --height=800 --output-path=screenshots/test
+
+# set output file (if not set, the url will be used)
+screenerx --url https://example.com --width=1200 --height=800 --output-path=screenshots/test --output-file=example.jpg
+
+# pass an url via stdin (e.g. from a file or echo)
+echo "https://example.com" | xargs -I {} ./screenerx.js --url={}
+ 
+# create screenshots in parallel (using gnu-parallel) with 4 threads: 
+cat links.txt | parallel --line-buffer -j 4 screenerx --url {}
+
+# specify a link file, default is links.txt (link file is ignored if you specify an url!)
+screenerx --file=links.txt
+```
+
+### Create a config file
+
+If you like, you can also create a config file. The config file will be used to generate the screenshots.
+
 create a file called `screenerconf.json`, you can see at `screenerconf.json.example` for an example.
 An entry looks basically like this:
 
@@ -26,9 +62,8 @@ An entry looks basically like this:
             "baseUrl" : "https://www.example.com",
             "linkFile" : "links.txt",
             "browser" : "chrome",
-            "width" : 1920,
-            "height" : 1080,
-            "fullPage" : false
+            "width" : "1920",
+            "height" : "1080"
         }
     ]
 }
@@ -41,26 +76,14 @@ An entry looks basically like this:
 | baseUrl  | if you specify a baseUrl, you can use paths only in your urlfile                                                |
 | browser  | chrome, firefox, etc.. Default is chrome, if you need another browsers, see puppeteer docs how to install these |
 | width    | width of the screen                                                                                             |
-| height   | height of the screen                                                                                            |
-| fullPage | if true, the screenshot will be made of the full site (ignores the width param)                                 |
+| height   | height of the screen, can be also "full" to create full size screenshots                                        |
 | linkFile | set a different link file for this job                                                                          |
 
-create a a text file and put your links into that file. For example `links.txt` (as specified above in json)
+create a text file and put your links into that file. For example `links.txt` (as specified above in json)
 The link list can be a normal list with full URLs starting with http://, https:// or you can also only specify the paths. for example /about. The full URL will be generated out of provided baseUrl in `screenerx.conf.json` and the provided path in links.txt
 You can specify the linkFile in the root of the json file, but you can also specify / override it in the task itself.
 
-Now start the screenerx process:
-
-```
-screenerx
-```
-
 The screenshots will be made in the screenshot folder.
 
-## Arguments
-
-You can also specify a link file:
-
-```
-screenerx --file=links2.txt
-```
+## License
+MIT

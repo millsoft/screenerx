@@ -7,8 +7,7 @@
             "baseUrl" : "https://www.example.com",
             "browser" : "chrome",
             "width" : 1920,
-            "height" : 1080,
-            "fullPage" : false
+            "height" : 1080
         }
     ]
 }
