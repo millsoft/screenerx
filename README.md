@@ -9,6 +9,7 @@ It uses the awesome puppeteer library which uses a real browser under the hood, 
 npm install -g screenerx
 # or:
 yarn global add screenerx
+# or use docker (see below)
 ```
 
 ## Usage
@@ -40,6 +41,9 @@ echo "https://example.com" | xargs -I {} ./screenerx.js --url={}
  
 # create screenshots in parallel (using gnu-parallel) with 4 threads: 
 cat links.txt | parallel --line-buffer -j 4 screenerx --url {}
+
+# docker example (see below for more information)
+cat links.txt | parallel --line-buffer -j 4 docker-compose run --rm screenerx --url {}
 
 # specify a link file, default is links.txt (link file is ignored if you specify an url!)
 screenerx --file=links.txt
@@ -85,5 +89,20 @@ You can specify the linkFile in the root of the json file, but you can also spec
 
 The screenshots will be made in the screenshot folder.
 
+
+## Docker
+
+You can also use this tool in a docker container.
+Just build the container with `docker build -t screenerx .` and run it with `docker run -it --rm -v $(pwd):/app/screenshots screenerx`
+
+or use the docker-compose file:
+
+```bash
+docker-compose run --rm screenerx
+```
+
 ## License
 MIT
+
+## Author
+Michael Milawski

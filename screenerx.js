@@ -1,6 +1,4 @@
 #!/usr/bin/env node
-const readline = require('readline');
-
 const yargs = require('yargs');
 const puppeteer = require('puppeteer');
 const fs = require('fs').promises;
@@ -9,6 +7,10 @@ const screenshotBasePath = 'screenshots';
 const screenshotPath = `${screenshotBasePath}/${new Date().toISOString()}`;
 const confFile = 'screenerx.conf.json';
 
+/**
+ * Get arguments from command line
+ * @returns {Promise<{linkFile: *, outputFile: ({describe: string}|*|undefined), outputPath: ({describe: string}|*|undefined), width: undefined, url, height: undefined}>}
+ */
 async function getArguments() {
 
     const argv = yargs
@@ -69,6 +71,10 @@ async function getArguments() {
     }
 }
 
+/**
+ * Read config file
+ * @returns {Promise<{linkFile: string, tasks: [{browser: string, name: string, width: number, enabled: boolean, height: number}]}|any>}
+ */
 async function readConfigFile() {
     try {
         const data = await fs.readFile(confFile, 'utf-8');
@@ -93,6 +99,11 @@ async function readConfigFile() {
     }
 }
 
+/**
+ * Create folder if it does not exist
+ * @param path
+ * @returns {Promise<void>}
+ */
 async function createFolder(path) {
     try {
         await fs.access(path);
@@ -101,11 +112,19 @@ async function createFolder(path) {
     }
 }
 
+/**
+ * Take screenshots of a given task
+ * @param task - object with task configuration
+ * @param conf - object with global configuration
+ * @param arguments - arguments passed from command line
+ * @returns {Promise<void>}
+ */
 async function takeScreenshots(task, conf, arguments) {
     const currentScreenshotPath = arguments.outputPath ?? `${screenshotPath}/${task.name}_${task.browser}`;
     await createFolder(currentScreenshotPath);
 
     const browser = await puppeteer.launch({
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
         headless: "new",
         product: task.browser,
         ignoreHTTPSErrors: true
@@ -161,12 +180,15 @@ async function takeScreenshots(task, conf, arguments) {
 
         if (err.code === 'ENOENT') {
             console.log(`Link file ${currentLinkFile} does not exist.`);
-            return;
         }
 
     }
 }
 
+
+/**
+ * Main function
+ */
 (async () => {
     const conf = await readConfigFile();
     const arguments = await getArguments();
