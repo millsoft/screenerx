@@ -4,11 +4,12 @@
 IMAGE_NAME=millsoft/screenerx
 IMAGE_VERSION=1.1.1
 IMAGE_TAG=$(IMAGE_NAME):$(IMAGE_VERSION)
+IMAGE_TAG_LATEST=$(IMAGE_NAME):latest
 
 # Targets
 .PHONY: build
 build:
-	docker build -t $(IMAGE_TAG) .
+	docker build -t $(IMAGE_TAG) -t $(IMAGE_TAG_LATEST) .
 
 .PHONY: run
 run:
@@ -17,6 +18,7 @@ run:
 .PHONY: push
 push:
 	docker push $(IMAGE_TAG)
+	docker push $(IMAGE_TAG_LATEST)
 
 .PHONY: clean
 clean:
@@ -27,6 +29,6 @@ npm-publish:
 	npm publish
 
 .PHONY: all
-all: build run push clean
+all: build push
 
 # EOF
